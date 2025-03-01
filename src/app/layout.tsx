@@ -10,6 +10,7 @@ import HeaderNavbar from "@/components/Header/HeaderNavbar";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Loading from "./loading/page";
+import GoogleAnalytics from "../lib/GoogleAnalytics";
 
 export default function RootLayout({
   children,
@@ -45,6 +46,9 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body>
+        {process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS ? (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS} />
+        ) : null}
         <GlobalStyle />
         <StyledComponentsRegistry>
           <ThemeProviderWrapper>

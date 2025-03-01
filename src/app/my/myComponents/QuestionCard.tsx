@@ -16,6 +16,7 @@ interface QuestionCardProps {
   index: number;
   onDelete: (id: number) => void;
   onCardClick: (id: number, isAnswered: boolean) => void;
+  canDelete?: boolean;
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -23,12 +24,16 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   index,
   onDelete,
   onCardClick,
+  canDelete,
 }) => {
   const [isSwiped, setIsSwiped] = React.useState(false);
 
   const handlers = useSwipeable({
     onSwipedLeft: () => setIsSwiped(true),
     onSwipedRight: () => setIsSwiped(false),
+    // 삭제 권한이 없는 경우 스와이프 기능 자체를 비활성화
+    trackMouse: canDelete,
+    trackTouch: canDelete,
   });
 
   const handleCardClick = () => {
@@ -55,15 +60,17 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           </AnswerStatus>
         </ContentWrapper>
 
-        <DeleteButton
-          $isSwiped={isSwiped}
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(question.id);
-          }}
-        >
-          <RiDeleteBin6Fill />
-        </DeleteButton>
+        {canDelete && (
+          <DeleteButton
+            $isSwiped={isSwiped}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(question.id);
+            }}
+          >
+            <RiDeleteBin6Fill />
+          </DeleteButton>
+        )}
       </CustomRow>
     </Card>
   );

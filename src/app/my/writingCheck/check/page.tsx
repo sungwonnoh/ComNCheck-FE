@@ -59,7 +59,12 @@ export default function Check() {
       return;
     }
     try {
-      await putQuestion(question.id, shared);
+      await putQuestion(
+        question.id,
+        shared,
+        question?.title,
+        question?.content
+      );
       alert("공유 상태가 업데이트되었습니다.");
       router.back();
     } catch (error) {

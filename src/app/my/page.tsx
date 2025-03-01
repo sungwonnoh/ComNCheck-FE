@@ -46,7 +46,7 @@ const roleLabels: Record<UserRole, string> = {
 };
 
 export default function My() {
-  const [role, setRole] = useState<UserRole>("ROLE_ADMIN"); //나중에 여기 기본 값으로 ROLE_STUDENT 넣기 수정하기
+  const [role, setRole] = useState<UserRole>("ROLE_STUDENT"); //나중에 여기 기본 값으로 ROLE_STUDENT 넣기 수정하기
   const [name, setName] = useState<string>("이름");
   const [id, setId] = useState<string>("학번");
   const router = useRouter();

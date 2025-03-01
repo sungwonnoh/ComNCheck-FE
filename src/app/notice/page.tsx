@@ -8,7 +8,12 @@ import NoticeCommonCard from "./Component/NoticeCommonCard";
 import { FaPenToSquare } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getEmployNotice, getMajorEvent, getMajorNotice } from "@/apis/notice";
+import {
+  getEmployNotice,
+  getMajorEvent,
+  getMajorNotice,
+  deleteEvent,
+} from "@/apis/notice";
 import { majorEventList, majorNoticeList } from "@/apis/notice.type";
 import axios from "axios";
 import { IoChevronForwardCircleOutline } from "react-icons/io5";
@@ -38,6 +43,29 @@ export default function Notice() {
     null
   );
   const size = 3;
+  const router = useRouter();
+  const [role, setRole] = useState<UserRole>("ROLE_ADMIN");
+  const [canDelete, setCanDelete] = useState<boolean>(false);
+
+  useEffect(() => {
+    const memberData = localStorage.getItem("memberData");
+    if (memberData) {
+      try {
+        const parsedData: UserInfo = JSON.parse(memberData);
+        setRole(parsedData.role as UserRole);
+
+        // 삭제 권한이 있는 역할 확인
+        const allowedRoles: UserRole[] = [
+          "ROLE_ADMIN",
+          "ROLE_MAJOR_PRESIDENT",
+          "ROLE_STUDENT_COUNCIL",
+        ];
+        setCanDelete(allowedRoles.includes(parsedData.role));
+      } catch (error) {
+        console.error("로컬 스토리지 값 안보여짐 에러 :", error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchNotices = async () => {
@@ -60,6 +88,7 @@ export default function Notice() {
 
     fetchNotices();
   }, [size]);
+
   useEffect(() => {
     const fetchMemberData = async () => {
       try {
@@ -82,33 +111,34 @@ export default function Notice() {
     fetchMemberData();
   }, []);
 
-  const router = useRouter();
-  const [role, setRole] = useState<UserRole>("ROLE_ADMIN");
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteEvent(id);
+
+      if (eventNotices) {
+        setEventNotices(eventNotices.filter((notice) => notice.id !== id));
+      }
+    } catch (error) {
+      console.error("공지 삭제 실패:", error);
+      alert("공지 삭제에 실패했습니다.");
+    }
+  };
 
   const handleWriteClick = () => {
     router.push("/notice/event/enroll");
   };
+
   const handleEventClick = () => {
     router.push("/notice/event");
   };
+
   const handleCollegeClick = () => {
     router.push("/notice/college");
   };
+
   const handleEmploymentClick = () => {
     router.push("/notice/employment");
   };
-
-  useEffect(() => {
-    const memberData = localStorage.getItem("memberData");
-    if (memberData) {
-      try {
-        const parsedData: UserInfo = JSON.parse(memberData);
-        setRole(parsedData.role as UserRole);
-      } catch (error) {
-        console.error("로컬 스토리지 값 안보여짐 에러 :", error);
-      }
-    }
-  }, []);
 
   const calculateDDay = (date: string) => {
     const eventDate = new Date(date);
@@ -154,6 +184,8 @@ export default function Notice() {
                     ...notice,
                     dDay: calculateDDay(notice.date),
                   }}
+                  onDelete={handleDelete}
+                  canDelete={canDelete}
                 />
               ))}
           </ScrollContainer>
@@ -188,6 +220,7 @@ export default function Notice() {
     </ContainerWrapper>
   );
 }
+
 const HeaderContainer = styled.div`
   display: flex;
   flex-direction: row;
@@ -197,10 +230,10 @@ const HeaderContainer = styled.div`
   padding-top: 0.5rem;
   width: 100%;
 `;
+
 const Header = styled.div`
   font-size: 1.2rem;
   font-weight: 700;
-  //padding-top: 0.5rem;
   display: flex;
   justify-content: space-start;
   align-items: center;
@@ -209,16 +242,16 @@ const Header = styled.div`
     width: 16rem;
     display: flex;
     align-items: center;
-    // justify-content: center;
-    // align-content: center;
     gap: 0.3rem;
   }
 `;
+
 const WritingBtnWrapper = styled.div`
   display: flex;
   justify-content: flex-end;
   width: 20vh;
 `;
+
 const WritingBtn = styled.div`
   gap: 0.5rem;
   display: flex;
@@ -226,7 +259,6 @@ const WritingBtn = styled.div`
   justify-content: center;
   font-size: 1rem;
   font-weight: 600;
-  // background-color: gray;
   cursor: pointer;
 `;
 
@@ -247,6 +279,7 @@ const ContentContainer = styled.div`
     display: none;
   }
 `;
+
 const ContentNoticeBox = styled.div`
   width: 100%;
   min-height: 10rem;
@@ -254,9 +287,9 @@ const ContentNoticeBox = styled.div`
   border-radius: 10px;
   box-shadow: 0 0px 10px ${theme.colors.mutedText};
   overflow: hidden;
-
   flex-shrink: 0;
 `;
+
 const ScrollContainer = styled.div`
   width: 100%;
   height: 100%;

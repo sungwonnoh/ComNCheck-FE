@@ -6,11 +6,31 @@ import { FaPenToSquare } from "react-icons/fa6";
 import { useRouter, useSearchParams } from "next/navigation";
 import FormWrapper from "@/components/container/FormWrapper";
 import Image from "next/image";
-//import imageSrc from "../../../../../public/logo.png";
 import EventBtn from "../../Component/EventBtn";
 import { useEffect, useState } from "react";
 import { makeEventDetail } from "@/apis/notice.type";
 import { inquireEvent } from "@/apis/notice";
+
+const ScrollableContent = styled.div`
+  width: 100%;
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding: 0 1rem;
+  box-sizing: border-box;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const CustomFormWrapper = styled(FormWrapper)`
+  width: 100%;
+  max-width: 100%; /* 최대 너비 제한 해제 */
+  padding: 1rem 0; /* 상하 패딩만 유지 */
+  box-sizing: border-box;
+`;
 
 const Header = styled.div`
   font-size: 1.2rem;
@@ -18,28 +38,32 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   width: 100%;
-  margin: 1rem;
+  margin: 1rem 0; /* 좌우 마진 제거, 상하만 유지 */
 `;
+
 const SubHeader = styled.div`
   font-size: 1rem;
   font-weight: 700;
   display: flex;
   width: 100%;
 `;
+
 const EventWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   width: 100%;
 `;
+
 const DDayDiv = styled.div`
   font-size: 1.2rem;
   font-weight: 700;
   margin-left: 1rem;
   display: flex;
   align-items: center;
-  padding-right: 1rem;
+  padding-right: 0; /* 패딩 제거 */
 `;
+
 const WritingBtn = styled.div`
   gap: 0.5rem;
   display: flex;
@@ -47,9 +71,11 @@ const WritingBtn = styled.div`
   justify-content: flex-end;
   font-size: 1rem;
   font-weight: 600;
-  width: 90%;
+  width: 100%; /* 꽉 찬 너비로 수정 */
   margin-bottom: 1rem;
+  cursor: pointer;
 `;
+
 const ImageContainer = styled.div`
   display: flex;
   position: relative;
@@ -62,14 +88,25 @@ const ImageContainer = styled.div`
 const StyledImage = styled(Image)`
   border-radius: 0.5rem;
   object-fit: cover;
+  max-width: 100%; /* 이미지가 컨테이너를 넘어가지 않도록 */
+  height: auto; /* 비율 유지 */
 `;
 
 const EventText = styled.div`
   font-size: 1.2rem;
   line-height: 1.8;
-  padding: 1rem;
+  padding: 1rem 0; /* 좌우 패딩 제거 */
   white-space: pre-wrap;
+  width: 100%;
 `;
+
+const ButtonContainer = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+`;
+
 export default function EventDetail() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -79,7 +116,7 @@ export default function EventDetail() {
     id: 0,
     eventName: "",
     date: "",
-    time: { hour: 0, minute: 0, second: 0, nano: 0 }, // 시간 타입에 맞춰 초기값 설정
+    time: { hour: 0, minute: 0, second: 0, nano: 0 },
     location: "",
     notice: "",
     googleFormLink: "",
@@ -87,6 +124,7 @@ export default function EventDetail() {
 
   const [dday, setDday] = useState<number | string>("");
   const [role, setRole] = useState<string | null>(null);
+
   useEffect(() => {
     if (id) {
       inquireEvent(parseInt(id))
@@ -99,43 +137,40 @@ export default function EventDetail() {
         });
     }
   }, [id]);
+
   useEffect(() => {
     const storedMemberData = localStorage.getItem("memberData");
     if (storedMemberData) {
       const memberData = JSON.parse(storedMemberData);
-      setRole(memberData.role); // role 저장
+      setRole(memberData.role);
     }
 
     if (event?.date) {
       const today = new Date();
-      const eventDate = new Date(event.date); // 이벤트 날짜를 Date 객체로 변환
+      const eventDate = new Date(event.date);
 
-      // 유효한 날짜인지 확인
       if (isNaN(eventDate.getTime())) {
         console.log("잘못된 날짜 형식입니다:", event.date);
-        setDday("날짜 오류"); // 날짜 오류 표시
+        setDday("날짜 오류");
       } else {
-        // 현재 날짜와 이벤트 날짜 비교하여 DDay 계산
         const timeDiff = eventDate.getTime() - today.getTime();
-        const daysRemaining = Math.floor(timeDiff / (1000 * 3600 * 24)); // 밀리초를 일로 변환
+        const daysRemaining = Math.floor(timeDiff / (1000 * 3600 * 24));
 
         if (daysRemaining < 0) {
-          // 이미 지난 이벤트일 경우 '종료'로 표시
           setDday("종료");
         } else if (daysRemaining === 0) {
-          // D-Day가 오늘인 경우
           setDday("D-Day");
         } else {
-          // 아직 남은 경우 D-Day 표시
           setDday(`D-${daysRemaining}`);
         }
       }
     }
-  }, []);
+  }, [event.date]);
 
   const handleWriteClick = () => {
     router.push(`/notice/event/modify?id=${event.id}`);
   };
+
   const handleNextClick = () => {
     if (event.googleFormLink) {
       window.open(event.googleFormLink, "_blank");
@@ -146,41 +181,46 @@ export default function EventDetail() {
 
   return (
     <ContainerWrapper>
-      <Header>{event.eventName}</Header>
-      <EventWrapper>
-        <div>
-          <SubHeader>📍일시 - {event.date} </SubHeader>
-          <SubHeader>📍시간 - {`${event.time}`}</SubHeader>
-          <SubHeader>📍장소 - {event.location} </SubHeader>
-        </div>
-        <DDayDiv>{dday}</DDayDiv>
-      </EventWrapper>
-      <WritingBtn
-        onClick={handleWriteClick}
-        style={{
-          visibility:
-            role === "ROLE_MAJOR_PRESIDENT" || role === "ROLE_GRADUATE_STUDENT"
-              ? "visible"
-              : "hidden",
-        }}
-      >
-        수정하기
-        <FaPenToSquare />
-      </WritingBtn>
-      <FormWrapper>
-        {event?.cardNewsImageUrls && event.cardNewsImageUrls.length > 0 && (
-          <ImageContainer>
-            <StyledImage
-              src={event.cardNewsImageUrls[0]} // 첫 번째 이미지 사용
-              alt="이벤트 이미지"
-              width={600}
-              height={400} // 이미지 크기 설정
-            />
-          </ImageContainer>
-        )}
-        <EventText>{event.notice}</EventText>
-      </FormWrapper>
-      <EventBtn onClick={handleNextClick} text="구글폼 신청링크 바로가기" />
+      <ScrollableContent>
+        <Header>{event.eventName}</Header>
+        <EventWrapper>
+          <div>
+            <SubHeader>📍일시 - {event.date} </SubHeader>
+            <SubHeader>📍시간 - {`${event.time}`}</SubHeader>
+            <SubHeader>📍장소 - {event.location} </SubHeader>
+          </div>
+          <DDayDiv>{dday}</DDayDiv>
+        </EventWrapper>
+        <WritingBtn
+          onClick={handleWriteClick}
+          style={{
+            visibility:
+              role === "ROLE_MAJOR_PRESIDENT" ||
+              role === "ROLE_GRADUATE_STUDENT"
+                ? "visible"
+                : "hidden",
+          }}
+        >
+          수정하기
+          <FaPenToSquare />
+        </WritingBtn>
+        <CustomFormWrapper>
+          {event?.cardNewsImageUrls && event.cardNewsImageUrls.length > 0 && (
+            <ImageContainer>
+              <StyledImage
+                src={event.cardNewsImageUrls[0]}
+                alt="이벤트 이미지"
+                width={600}
+                height={400}
+              />
+            </ImageContainer>
+          )}
+          <EventText>{event.notice}</EventText>
+        </CustomFormWrapper>
+        <ButtonContainer>
+          <EventBtn onClick={handleNextClick} text="구글폼 신청링크 바로가기" />
+        </ButtonContainer>
+      </ScrollableContent>
     </ContainerWrapper>
   );
 }

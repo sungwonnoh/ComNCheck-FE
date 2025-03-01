@@ -15,12 +15,14 @@ interface CommonQuestionListProps {
   questions: Question[];
   onDelete: (id: number) => void;
   onCardClick: (id: number, isAnswered: boolean) => void;
+  canDelete: boolean;
 }
 
 const FAQQuestionList: React.FC<CommonQuestionListProps> = ({
   questions,
   onDelete,
   onCardClick,
+  canDelete,
 }) => {
   return (
     <ContainerWrapper>
@@ -32,6 +34,7 @@ const FAQQuestionList: React.FC<CommonQuestionListProps> = ({
             index={index}
             onDelete={onDelete}
             onCardClick={onCardClick}
+            canDelete={canDelete}
           />
         ))}
       </FormWrapper>

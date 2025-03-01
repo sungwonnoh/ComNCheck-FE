@@ -111,7 +111,7 @@ export default function SlideHeader() {
         {eventNotices.map((_, index) => (
           <Indicator
             key={index}
-            active={index === currentIndex}
+            $active={index === currentIndex}
             onClick={() => setCurrentIndex(index)}
           />
         ))}
@@ -169,12 +169,12 @@ const Indicators = styled.div`
   margin-top: -0.5rem;
 `;
 
-const Indicator = styled.div<{ active: boolean }>`
+const Indicator = styled.div<{ $active: boolean }>`
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background-color: ${(props) =>
-    props.active ? theme.colors.primary : theme.colors.mutedText};
+    props.$active ? theme.colors.primary : theme.colors.mutedText};
   cursor: pointer;
   transition: background-color 0.3s ease;
 `;
